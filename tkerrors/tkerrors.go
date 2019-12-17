@@ -1,4 +1,4 @@
-package errorsutil
+package tkerrors
 
 import "errors"
 
