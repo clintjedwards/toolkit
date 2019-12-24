@@ -6,13 +6,14 @@ import (
 )
 
 type projectInfo struct {
-	Changelog []byte
-	BuildPath string
-	Date      string // human readable date ex: June 19, 2019
-	Name      string
-	Username  string
-	Version   string
-	Commands  map[string][]string
+	Changelog   []byte
+	BuildPath   string
+	Date        string // human readable date ex: June 19, 2019
+	Name        string
+	Username    string
+	Version     string
+	VersionFull string
+	Commands    map[string][]string
 }
 
 func getProjectInfo(configFilePath string) (projectInfo, error) {

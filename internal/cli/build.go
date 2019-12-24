@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -11,10 +12,15 @@ import (
 )
 
 var cmdBuild = &cobra.Command{
-	Use:   "build <semver> <path> --config <toolkit path>",
+	Use:   "build <semver> <path>",
 	Short: "Controls the build process for an application",
-	Args:  cobra.MinimumNArgs(2),
-	Run:   runBuildCmd,
+	Long: `Runs the commands under 'build' in config file to build the application
+Injects variables in template format: {{.Example}}
+
+Variables injected: Version, BuildPath
+`,
+	Args: cobra.MinimumNArgs(2),
+	Run:  runBuildCmd,
 }
 
 func runBuildCmd(cmd *cobra.Command, args []string) {
@@ -37,6 +43,8 @@ func runBuildCmd(cmd *cobra.Command, args []string) {
 		log.Fatalf("could not parse semver string: %v", err)
 	}
 	project.BuildPath = buildPath
+
+	project.VersionFull = getVersionFull(project.Version)
 
 	echoCommands, _ := cmd.Flags().GetBool("echoCommands")
 	env := os.Environ()
@@ -63,10 +71,25 @@ func runBuildCmd(cmd *cobra.Command, args []string) {
 
 		hideOutput, _ := cmd.Flags().GetBool("hideOutput")
 		if !hideOutput {
-			fmt.Println(string(output))
+			if len(output) != 0 {
+				fmt.Println(string(output))
+			}
 		}
 	}
 
+}
+
+func getVersionFull(semver string) string {
+	versionFmt := "%s_%s_%s"
+	gitCommand := "git rev-parse --short HEAD"
+	dateCommand := "date +%s"
+	commit, _ := osutil.ExecuteBashCmd(gitCommand, os.Environ(), "")
+	epoch, _ := osutil.ExecuteBashCmd(dateCommand, os.Environ(), "")
+
+	commit = bytes.TrimSpace(commit)
+	epoch = bytes.TrimSpace(epoch)
+
+	return fmt.Sprintf(versionFmt, semver, epoch, commit)
 }
 
 func init() {

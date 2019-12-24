@@ -15,7 +15,7 @@ const dateFmt string = "%s %d, %d"
 const binaryPathFmt string = "/tmp/%s_%s"
 
 var cmdRelease = &cobra.Command{
-	Use:   "release <semver> --config <toolkit path>",
+	Use:   "release <semver>",
 	Short: "Controls the release process for an application",
 	Long: `The release command uses semantic versioning to build a new version
 of the provided application and create a new github release.

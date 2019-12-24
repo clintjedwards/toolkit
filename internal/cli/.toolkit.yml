@@ -2,4 +2,7 @@ repoName: clintjedwards/toolkit
 commands:
   build:
     - go mod tidy
+    - go test .
     - go build -ldflags '-X "main.version={{.Version}}"' -o {{.BuildPath}}
+  deploy:
+    - uname -a
