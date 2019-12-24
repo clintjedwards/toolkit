@@ -1,4 +1,0 @@
-repoName: clintjedwards/toolkit
-commands:
-  build:
-    - echo "{{.Version}}"
