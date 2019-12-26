@@ -1,7 +1,7 @@
-package main
+package changelog
 
 // pretext is the placeholder text for the input file
-var pretext = `// New release for {{.Name}} v{{.Version}}
+const pretext = `// New release for {{.Name}} v{{.Version}}
 // All lines starting with '//' will be excluded from final changelog
 // Insert changelog below this comment. An example format has been given:
 
