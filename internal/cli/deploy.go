@@ -32,11 +32,12 @@ under "deploy" in configuration file`,
 }
 
 type deploy struct {
-	Host        string
-	Name        string
-	Version     string
-	DownloadURL string
-	Commands    map[string][]string
+	Host           string
+	Name           string
+	Version        string
+	DownloadURL    string
+	UploadFilePath string
+	Commands       map[string][]string
 }
 
 func newDeploy(configFile string, args []string) (*deploy, error) {
@@ -60,12 +61,15 @@ func newDeploy(configFile string, args []string) (*deploy, error) {
 	downloadURL := fmt.Sprintf(downloadURLFmt,
 		projectUser, projectName, version.String(), projectName)
 
+	uploadFilePath := fmt.Sprintf("/tmp/%s_%s", projectName, version.String())
+
 	return &deploy{
-		Host:        args[1],
-		Name:        projectName,
-		DownloadURL: downloadURL,
-		Version:     version.String(),
-		Commands:    config.Commands,
+		Host:           args[1],
+		Name:           projectName,
+		DownloadURL:    downloadURL,
+		UploadFilePath: uploadFilePath,
+		Version:        version.String(),
+		Commands:       config.Commands,
 	}, nil
 }
 
@@ -112,9 +116,8 @@ func (d *deploy) transferBinary() error {
 	}
 
 	// Upload the binary we just downloaded to server mentioned
-	uploadFilePath := fmt.Sprintf("/tmp/%s_%s", d.Name, d.Version)
 	uploadCmdFmt := "scp %s %s:%s"
-	uploadCmd := fmt.Sprintf(uploadCmdFmt, filename, d.Host, uploadFilePath)
+	uploadCmd := fmt.Sprintf(uploadCmdFmt, filename, d.Host, d.UploadFilePath)
 
 	log.Println("uploading binary")
 	_, err = osutil.ExecuteBashCmd(uploadCmd, os.Environ(), "")
