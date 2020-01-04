@@ -2,26 +2,47 @@ package logger
 
 import (
 	"log"
-	"os"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-// Log returns a configured logger
-func Log() *zap.SugaredLogger {
-	debug := os.Getenv("DEBUG")
+// InitGlobalLogger sets an application wide logger using zap
+// after running this in main you can use Zap.S() to log things
+func InitGlobalLogger(level string, development bool) {
 
-	var logger *zap.Logger
-	logger, err := zap.NewProduction()
+	config := zap.NewProductionConfig()
 
-	if debug == "true" {
-		logger, err = zap.NewDevelopment()
+	if development {
+		config = zap.NewDevelopmentConfig()
 	}
+
+	config.Level.SetLevel(parseLogLevel(level))
+
+	logger, err := config.Build()
 	if err != nil {
-		log.Printf("could not init logger: %v", err)
+		log.Fatal(err)
 	}
 
-	sugar := logger.Sugar()
+	zap.ReplaceGlobals(logger)
 
-	return sugar
+}
+
+func parseLogLevel(loglevel string) zapcore.Level {
+	switch loglevel {
+	case "debug":
+		return zapcore.DebugLevel
+	case "info":
+		return zapcore.InfoLevel
+	case "warn":
+		return zapcore.WarnLevel
+	case "error":
+		return zapcore.ErrorLevel
+	case "fatal":
+		return zapcore.FatalLevel
+	case "panic":
+		return zapcore.PanicLevel
+	default:
+		return zapcore.InfoLevel
+	}
 }
