@@ -1,8 +1,8 @@
-repoName: clintjedwards/toolkit
+repository: clintjedwards/toolkit
 commands:
   build:
     - go mod tidy
     - go test .
-    - go build -ldflags '-X "main.version={{.Version}}"' -o {{.BuildPath}}
+    - go build -ldflags '-X "main.version={{.Version}}"' -o {{.Path}}
   deploy:
     - uname -a
