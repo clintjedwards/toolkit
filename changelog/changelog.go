@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"text/template"
+
+	"github.com/theckman/yacspin"
 )
 
 const editorEnvVar string = "EDITOR"
@@ -76,7 +77,9 @@ func getContentsFromUser(filePath string) ([]byte, error) {
 }
 
 // HandleChangelog opens a pre-populated file for editing and returns the final user contents
-func HandleChangelog(name, version, date string) ([]byte, error) {
+func HandleChangelog(name, version, date string, spinner *yacspin.Spinner) ([]byte, error) {
+	spinner.Message("Creating changelog")
+
 	prefix := "changelog"
 	suffix := "md" // markdown
 	filePath := fmt.Sprintf(filePathFmt, prefix, name, version, suffix)
@@ -84,7 +87,7 @@ func HandleChangelog(name, version, date string) ([]byte, error) {
 	// attempt to recover a changelog file
 	_, err := os.Stat(filePath)
 	if err == nil {
-		log.Printf("recovered previous changelog (%s)", filePath)
+		spinner.Message(fmt.Sprintf("Recovered previous changelog (%s)", filePath))
 		return getContentsFromUser(filePath)
 	}
 
@@ -113,6 +116,7 @@ func HandleChangelog(name, version, date string) ([]byte, error) {
 		return nil, err
 	}
 
+	spinner.Message("Waiting for user input")
 	return getContentsFromUser(filePath)
 }
 

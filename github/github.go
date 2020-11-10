@@ -10,11 +10,11 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
-	"github.com/clintjedwards/toolkit/changelog"
 	"github.com/clintjedwards/toolkit/config"
 	"github.com/clintjedwards/toolkit/utils"
 	"github.com/google/go-github/github"
 	"github.com/mitchellh/go-homedir"
+	"github.com/theckman/yacspin"
 	"golang.org/x/oauth2"
 )
 
@@ -35,14 +35,9 @@ type Release struct {
 }
 
 // NewRelease creates a prepopulated release struct using the config file and other sources
-func NewRelease(configFile string, args []string) (*Release, error) {
-	config := &config.Config{}
-	err := config.Load(configFile)
-	if err != nil {
-		return nil, fmt.Errorf("could not load config file: %w", err)
-	}
-
+func NewRelease(config *config.Config, args []string, spinner *yacspin.Spinner) (*Release, error) {
 	// insert version into build struct
+	spinner.Message("Parsing version")
 	version, err := semver.NewVersion(args[0])
 	if err != nil {
 		return nil, fmt.Errorf("could not parse semver string: %w", err)
@@ -53,6 +48,7 @@ func NewRelease(configFile string, args []string) (*Release, error) {
 		return nil, fmt.Errorf("could not get full version string: %w", err)
 	}
 
+	spinner.Message("Getting github url and username")
 	user, projectName, err := ParseGithubURL(config.Repository)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse github URL: %w", err)
@@ -62,13 +58,7 @@ func NewRelease(configFile string, args []string) (*Release, error) {
 	year, month, day := time.Now().Date()
 	date := fmt.Sprintf(dateFmt, month, day, year)
 
-	cl, err := changelog.HandleChangelog(projectName, version.String(), date)
-	if err != nil {
-		return nil, fmt.Errorf("could not get changelog: %w", err)
-	}
-
 	return &Release{
-		Changelog:   cl,
 		Commands:    config.Commands,
 		Date:        date,
 		ProjectName: projectName,
@@ -80,9 +70,10 @@ func NewRelease(configFile string, args []string) (*Release, error) {
 }
 
 // CreateGithubRelease cuts a new release, tags the current commit with semver, and uploads the changelog as a description
-func (r *Release) CreateGithubRelease(tokenFile, binaryPath string) error {
+func (r *Release) CreateGithubRelease(tokenFile, binaryPath string, spinner *yacspin.Spinner) error {
 	ctx := context.Background()
 
+	spinner.Message("Getting Github token")
 	token, err := getGithubToken(tokenFile)
 	if err != nil {
 		return fmt.Errorf("could not get github token: %w", err)
@@ -101,6 +92,7 @@ func (r *Release) CreateGithubRelease(tokenFile, binaryPath string) error {
 		Body:    github.String(string(r.Changelog)),
 	}
 
+	spinner.Message("Cutting Github release")
 	createdRelease, _, err := client.Repositories.CreateRelease(ctx, r.User, r.ProjectName, release)
 	if err != nil {
 		return err
@@ -110,6 +102,7 @@ func (r *Release) CreateGithubRelease(tokenFile, binaryPath string) error {
 		return nil
 	}
 
+	spinner.Message("Uploading binary")
 	_, err = os.Stat(binaryPath)
 	if os.IsNotExist(err) {
 		return fmt.Errorf("could not find binary file: %s; %w", binaryPath, err)
@@ -121,8 +114,11 @@ func (r *Release) CreateGithubRelease(tokenFile, binaryPath string) error {
 	}
 	defer f.Close()
 
-	client.Repositories.UploadReleaseAsset(ctx, r.User, r.ProjectName, createdRelease.GetID(),
+	_, _, err = client.Repositories.UploadReleaseAsset(ctx, r.User, r.ProjectName, createdRelease.GetID(),
 		&github.UploadOptions{Name: r.ProjectName}, f)
+	if err != nil {
+		return fmt.Errorf("could not upload binary file: %s; %w", binaryPath, err)
+	}
 
 	return nil
 }
