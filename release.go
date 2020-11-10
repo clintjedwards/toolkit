@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/clintjedwards/toolkit/internal/cli/github"
+	"github.com/clintjedwards/toolkit/github"
 	"github.com/spf13/cobra"
 )
 

@@ -8,9 +8,9 @@ import (
 	"os"
 
 	"github.com/Masterminds/semver"
-	"github.com/clintjedwards/toolkit/internal/cli/config"
-	"github.com/clintjedwards/toolkit/internal/cli/github"
-	"github.com/clintjedwards/toolkit/osutil"
+	"github.com/clintjedwards/toolkit/config"
+	"github.com/clintjedwards/toolkit/github"
+	"github.com/clintjedwards/toolkit/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -92,7 +92,7 @@ func runBuildCmd(cmd *cobra.Command, args []string) {
 			fmt.Println("> " + command)
 		}
 
-		output, err := osutil.ExecuteBashCmd(command, env, "")
+		output, err := utils.ExecuteBashCmd(command, env, "")
 		if err != nil {
 			log.Fatalf("could not run command '%s'; %v", command, err)
 		}
@@ -125,8 +125,8 @@ func getVersionFull(semver string) (string, error) {
 	dateCmd := "date +%s"
 
 	env := os.Environ()
-	commit, err := osutil.ExecuteBashCmd(gitCmd, env, "")
-	epoch, err := osutil.ExecuteBashCmd(dateCmd, env, "")
+	commit, err := utils.ExecuteBashCmd(gitCmd, env, "")
+	epoch, err := utils.ExecuteBashCmd(dateCmd, env, "")
 	if err != nil {
 		return "", fmt.Errorf("could not determine version: %w", err)
 	}

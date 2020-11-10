@@ -1,4 +1,3 @@
 - dry run flag
-- be its own make file through the yml config file
 - if user doesn't provide version we should lookup which one was the last and prompt user to enter new one
 - deploy should have a skip download/upload command

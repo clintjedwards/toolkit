@@ -11,10 +11,10 @@ import (
 	"os"
 
 	"github.com/Masterminds/semver"
-	"github.com/clintjedwards/toolkit/internal/cli/config"
-	"github.com/clintjedwards/toolkit/internal/cli/github"
-	"github.com/clintjedwards/toolkit/internal/cli/sshutil"
-	"github.com/clintjedwards/toolkit/osutil"
+	"github.com/clintjedwards/toolkit/config"
+	"github.com/clintjedwards/toolkit/github"
+	"github.com/clintjedwards/toolkit/sshutil"
+	"github.com/clintjedwards/toolkit/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -120,7 +120,7 @@ func (d *deploy) transferBinary() error {
 	uploadCmd := fmt.Sprintf(uploadCmdFmt, filename, d.Host, d.UploadFilePath)
 
 	log.Println("uploading binary")
-	_, err = osutil.ExecuteBashCmd(uploadCmd, os.Environ(), "")
+	_, err = utils.ExecuteBashCmd(uploadCmd, os.Environ(), "")
 	if err != nil {
 		return fmt.Errorf("could not run command '%s'; %w", uploadCmd, err)
 	}

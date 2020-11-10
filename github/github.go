@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
-	"github.com/clintjedwards/toolkit/internal/cli/changelog"
-	"github.com/clintjedwards/toolkit/internal/cli/config"
-	"github.com/clintjedwards/toolkit/osutil"
+	"github.com/clintjedwards/toolkit/changelog"
+	"github.com/clintjedwards/toolkit/config"
+	"github.com/clintjedwards/toolkit/utils"
 	"github.com/google/go-github/github"
 	"github.com/mitchellh/go-homedir"
 	"golang.org/x/oauth2"
@@ -185,8 +185,8 @@ func getVersionFull(semver string) (string, error) {
 	dateCmd := "date +%s"
 
 	env := os.Environ()
-	commit, err := osutil.ExecuteBashCmd(gitCmd, env, "")
-	epoch, err := osutil.ExecuteBashCmd(dateCmd, env, "")
+	commit, err := utils.ExecuteBashCmd(gitCmd, env, "")
+	epoch, err := utils.ExecuteBashCmd(dateCmd, env, "")
 	if err != nil {
 		return "", fmt.Errorf("could not determine version: %w", err)
 	}
